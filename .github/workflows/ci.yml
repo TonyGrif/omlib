@@ -1,0 +1,35 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        uv-version: ["0.10.9"]
+        python-version: ["3.12"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8
+        with:
+          version: ${{ matrix.uv-version }}
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install Project
+        run: uv sync --all-groups
+
+      - name: Linting
+        run: uv run --no-sync poe lint
+
+      - name: Testing
+        run: uv run --no-sync poe test
