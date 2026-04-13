@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, Dict
+
 
 class Client:
     """HTTP settings passed to the requests library."""
@@ -11,7 +13,7 @@ class Client:
         timeout: int = 30,
         retries: int = 3,
         base_url: str | None = None,
-        **kwargs: object,
+        **kwargs: Any,
     ) -> None:
         """Initializes the Client with the given HTTP settings.
 
@@ -25,4 +27,4 @@ class Client:
         self.timeout = timeout
         self.retries = retries
         self.base_url = base_url
-        self.kwargs = kwargs
+        self.kwargs: Dict[str, Any] = kwargs

@@ -1,7 +1,6 @@
-"""Python wrapper around various Open-Meteo APIs
+"""Python wrapper around various Open-Meteo APIs."""
 
-Attributes:
-    TBW
-"""
+from omlib.client import Client
+from omlib.historic import HistoricAPI
 
-__all__ = []
+__all__ = ["Client", "HistoricAPI"]

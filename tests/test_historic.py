@@ -1,22 +1,35 @@
 """Tests for omlib.historic.HistoricAPI."""
 
-import responses as rsps
 import pytest
 import requests
+import responses as rsps
 
 from omlib.client import Client
 from omlib.historic import HistoricAPI
 
 _ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-_MOCK_RESPONSE = {"latitude": 48.8, "longitude": 2.3, "hourly": {"temperature_2m": [20.1]}}
+_MOCK_RESPONSE = {
+    "latitude": 48.8,
+    "longitude": 2.3,
+    "hourly": {"temperature_2m": [20.1]},
+}
 
 
 def _make_api(base_url: str | None = None, **kwargs) -> HistoricAPI:
     return HistoricAPI(
         Client(base_url=base_url),
-        48.8, 2.3, "2024-01-01", "2024-01-31",
+        48.8,
+        2.3,
+        "2024-01-01",
+        "2024-01-31",
         **kwargs,
     )
+
+
+def _url(call_index: int = 0) -> str:
+    url = rsps.calls[call_index].request.url
+    assert url is not None
+    return url
 
 
 @rsps.activate
@@ -34,11 +47,11 @@ def test_archive_required_params_in_query() -> None:
 
     _make_api().archive()
 
-    req = rsps.calls[0].request
-    assert "latitude=48.8" in req.url
-    assert "longitude=2.3" in req.url
-    assert "start_date=2024-01-01" in req.url
-    assert "end_date=2024-01-31" in req.url
+    url = _url()
+    assert "latitude=48.8" in url
+    assert "longitude=2.3" in url
+    assert "start_date=2024-01-01" in url
+    assert "end_date=2024-01-31" in url
 
 
 @rsps.activate
@@ -47,7 +60,7 @@ def test_archive_hourly_list_joined() -> None:
 
     _make_api().archive(hourly=["temperature_2m", "precipitation"])
 
-    assert "hourly=temperature_2m%2Cprecipitation" in rsps.calls[0].request.url
+    assert "hourly=temperature_2m%2Cprecipitation" in _url()
 
 
 @rsps.activate
@@ -56,7 +69,7 @@ def test_archive_timezone_forwarded() -> None:
 
     _make_api(timezone="Europe/Paris").archive()
 
-    assert "timezone=Europe%2FParis" in rsps.calls[0].request.url
+    assert "timezone=Europe%2FParis" in _url()
 
 
 @rsps.activate
@@ -65,7 +78,7 @@ def test_archive_none_params_omitted() -> None:
 
     _make_api().archive()
 
-    url = rsps.calls[0].request.url
+    url = _url()
     assert "timezone" not in url
     assert "temperature_unit" not in url
     assert "wind_speed_unit" not in url
@@ -79,12 +92,17 @@ def test_archive_base_url_override() -> None:
 
     _make_api(base_url="http://localhost:8080").archive()
 
-    assert rsps.calls[0].request.url.startswith(custom_url)
+    assert _url().startswith(custom_url)
 
 
 @rsps.activate
 def test_archive_http_error_raises() -> None:
-    rsps.add(rsps.GET, _ARCHIVE_URL, json={"error": True, "reason": "bad request"}, status=400)
+    rsps.add(
+        rsps.GET,
+        _ARCHIVE_URL,
+        json={"error": True, "reason": "bad request"},
+        status=400,
+    )
 
     with pytest.raises(requests.HTTPError):
         _make_api().archive()
@@ -102,7 +120,7 @@ def test_public_attrs_update_query() -> None:
     api.timezone = "Europe/London"
     api.archive()
 
-    url = rsps.calls[0].request.url
+    url = _url()
     assert "latitude=51.5" in url
     assert "longitude=-0.1" in url
     assert "start_date=2024-06-01" in url

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -88,7 +88,7 @@ class HistoricAPI:
         Raises:
             requests.HTTPError: If the API returns a non-2xx status.
         """
-        params: Dict[str, object] = {
+        params: Dict[str, Any] = {
             "latitude": self.latitude,
             "longitude": self.longitude,
             "start_date": self.start_date,
