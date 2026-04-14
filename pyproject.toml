@@ -28,7 +28,7 @@ exclude = [
 select = ["E", "F", "I"]
 
 [tool.poe.tasks]
-test = "pytest --cov-report term-missing"
+test = "pytest --cov=omlib --cov-report term-missing"
 
 _format = "ruff format ."
 _clean = "ruff check --fix ."
