@@ -155,3 +155,19 @@ def test_public_attrs_update_query() -> None:
     assert "start_date=2024-06-01" in url
     assert "end_date=2024-06-30" in url
     assert "timezone=Europe%2FLondon" in url
+
+
+def test_init_rejects_bad_coordinates() -> None:
+    with pytest.raises(ValueError, match="latitude must be between"):
+        HistoricAPI(Client(), 120.0, 2.3, "2024-01-01", "2024-01-02")
+
+    with pytest.raises(ValueError, match="longitude must be between"):
+        HistoricAPI(Client(), 48.8, 220.0, "2024-01-01", "2024-01-02")
+
+
+def test_init_rejects_bad_dates() -> None:
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        HistoricAPI(Client(), 48.8, 2.3, "2024/01/01", "2024-01-02")
+
+    with pytest.raises(ValueError, match="start_date must be on or before end_date"):
+        HistoricAPI(Client(), 48.8, 2.3, "2024-02-01", "2024-01-02")

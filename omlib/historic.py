@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -48,6 +49,8 @@ class HistoricAPI:
         """
         self._client = client
         self._base_url = client.base_url or self._BASE_URL
+        self._validate_coordinates(latitude, longitude)
+        self._validate_dates(start_date, end_date)
         self.latitude = latitude
         self.longitude = longitude
         self.start_date = start_date
@@ -75,6 +78,23 @@ class HistoricAPI:
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         return session
+
+    @staticmethod
+    def _validate_coordinates(latitude: float, longitude: float) -> None:
+        if not (-90 <= latitude <= 90):
+            raise ValueError("latitude must be between -90 and 90")
+        if not (-180 <= longitude <= 180):
+            raise ValueError("longitude must be between -180 and 180")
+
+    @staticmethod
+    def _validate_dates(start_date: str, end_date: str) -> None:
+        try:
+            start = date.fromisoformat(start_date)
+            end = date.fromisoformat(end_date)
+        except ValueError as exc:
+            raise ValueError("start_date and end_date must be YYYY-MM-DD") from exc
+        if start > end:
+            raise ValueError("start_date must be on or before end_date")
 
     def archive(
         self,
