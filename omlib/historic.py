@@ -64,7 +64,13 @@ class HistoricAPI:
             A configured requests.Session.
         """
         session = requests.Session()
-        retry = Retry(total=self._client.retries, raise_on_status=False)
+        retry = Retry(
+            total=self._client.retries,
+            backoff_factor=0.5,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=frozenset(["GET"]),
+            raise_on_status=False,
+        )
         adapter = HTTPAdapter(max_retries=retry)
         session.mount("http://", adapter)
         session.mount("https://", adapter)

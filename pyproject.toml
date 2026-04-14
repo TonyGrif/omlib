@@ -19,6 +19,11 @@ dev = [
     "types-requests>=2.33.0.20260408",
 ]
 
+[tool.mypy]
+exclude = [
+    "tests/",
+]
+
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 

@@ -108,6 +108,17 @@ def test_archive_http_error_raises() -> None:
         _make_api().archive()
 
 
+def test_session_retries_on_status_codes() -> None:
+    api = _make_api()
+    session = api._session()
+    adapter = session.get_adapter("https://")
+    retry = adapter.max_retries
+
+    assert retry.backoff_factor == 0.5
+    assert 429 in retry.status_forcelist
+    assert retry.allowed_methods == frozenset(["GET"])
+
+
 @rsps.activate
 def test_public_attrs_update_query() -> None:
     rsps.add(rsps.GET, _ARCHIVE_URL, json=_MOCK_RESPONSE, status=200)
