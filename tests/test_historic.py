@@ -1,5 +1,7 @@
 """Tests for omlib.historic.HistoricAPI."""
 
+from unittest.mock import MagicMock
+
 import pytest
 import requests
 import responses as rsps
@@ -117,6 +119,22 @@ def test_session_retries_on_status_codes() -> None:
     assert retry.backoff_factor == 0.5
     assert 429 in retry.status_forcelist
     assert retry.allowed_methods == frozenset(["GET"])
+
+
+@rsps.activate
+def test_archive_closes_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    rsps.add(rsps.GET, _ARCHIVE_URL, json=_MOCK_RESPONSE, status=200)
+
+    api = _make_api()
+    session = requests.Session()
+    close_mock = MagicMock(wraps=session.close)
+
+    session.close = close_mock  # type: ignore[method-assign]
+    monkeypatch.setattr(api, "_session", lambda: session)
+
+    api.archive()
+
+    close_mock.assert_called_once()
 
 
 @rsps.activate

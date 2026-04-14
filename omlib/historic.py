@@ -115,11 +115,14 @@ class HistoricAPI:
 
         url = f"{self._base_url}/v1/archive"
         session = self._session()
-        response = session.get(
-            url,
-            params=params,
-            timeout=self._client.timeout,
-            **self._client.kwargs,
-        )
-        response.raise_for_status()
-        return response.json()  # type: ignore[no-any-return]
+        try:
+            response = session.get(
+                url,
+                params=params,
+                timeout=self._client.timeout,
+                **self._client.kwargs,
+            )
+            response.raise_for_status()
+            return response.json()  # type: ignore[no-any-return]
+        finally:
+            session.close()
